@@ -12,23 +12,14 @@ spec:
       labels:
         component: {{ template "fullname" . }}
         role: client
-      annotations:
-        # Elasticsearch uses a hybrid mmapfs / niofs directory by default to
-        # store its indices. The default operating system limits on mmap counts
-        # is likely to be too low, which may result in out of memory exceptions,
-        # so we use vm.max_map_count=262144 to increase that value.
-        pod.beta.kubernetes.io/init-containers: '[
-          {
-          "name": "sysctl",
-            "image": "busybox",
-            "imagePullPolicy": "IfNotPresent",
-            "command": ["sysctl", "-w", "vm.max_map_count=262144"],
-            "securityContext": {
-              "privileged": true
-            }
-          }
-        ]'
     spec:
+      initContainers:
+      - name: init-sysctl
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
     {{- if eq .Values.client.antiAffinity "hard" }}
       affinity:
         podAntiAffinity:
@@ -59,6 +50,13 @@ spec:
               - IPC_LOCK
               - SYS_RESOURCE
         image: "{{ .Values.common.image.repository }}:{{ .Values.common.image.tag }}"
+        resources:
+          requests:
+            memory: {{ .Values.client.memory.request }}
+            cpu: {{ .Values.client.cpu.request }}
+          limits:
+            memory: {{ .Values.client.memory.limit }}
+            cpu: {{ .Values.client.cpu.limit }}
         imagePullPolicy: {{ .Values.common.image.pullPolicy }}
         env:
         - name: NAMESPACE

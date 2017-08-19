@@ -12,23 +12,14 @@ spec:
       labels:
         component: {{ template "fullname" . }}
         role: data
-      annotations:
-        # Elasticsearch uses a hybrid mmapfs / niofs directory by default to
-        # store its indices. The default operating system limits on mmap counts
-        # is likely to be too low, which may result in out of memory exceptions,
-        # so we use vm.max_map_count=262144 to increase that value.
-        pod.beta.kubernetes.io/init-containers: '[
-          {
-          "name": "sysctl",
-            "image": "busybox",
-            "imagePullPolicy": "IfNotPresent",
-            "command": ["sysctl", "-w", "vm.max_map_count=262144"],
-            "securityContext": {
-              "privileged": true
-            }
-          }
-        ]'
     spec:
+      initContainers:
+      - name: init-sysctl
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
     {{- if eq .Values.data.antiAffinity "hard" }}
       affinity:
         podAntiAffinity:
@@ -59,6 +50,13 @@ spec:
               - IPC_LOCK
               - SYS_RESOURCE
         image: "{{ .Values.common.image.repository }}:{{ .Values.common.image.tag }}"
+        resources:
+          requests:
+            memory: {{ .Values.data.memory.request }}
+            cpu: {{ .Values.data.cpu.request }}
+          limits:
+            memory: {{ .Values.data.memory.limit }}
+            cpu: {{ .Values.data.cpu.limit }}
         imagePullPolicy: {{ .Values.common.image.pullPolicy }}
         env:
         - name: NAMESPACE
@@ -84,9 +82,9 @@ spec:
           name: transport
           protocol: TCP
         volumeMounts:
-        - name: storage
-          mountPath: /data
+        - mountPath: /data
+          name: {{ template "fullname" . }}-storage
       volumes:
-        - emptyDir:
-            medium: ""
-          name: "storage"
+      - name: {{ template "fullname" . }}-storage
+        persistentVolumeClaim:
+          claimName: {{ template "fullname" . }}-storage-claim
