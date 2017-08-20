@@ -15,6 +15,8 @@ spec:
       labels:
         component: {{ template "fullname" . }}-kibana
     spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: other
       containers:
       - name: {{ template "fullname" . }}-kibana
         image: cfontes/kibana-xpack-less:5.5.0
