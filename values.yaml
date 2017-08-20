@@ -18,8 +18,8 @@ client:
     HTTP_ENABLE: "true"
     ES_JAVA_OPTS: "-Xms8g -Xmx8g"
   memory:
-    request: "16gGi"
-    limit: "16gGi"
+    request: "16Gi"
+    limit: "16Gi"
   cpu:
     request: "2"
     limit: "2"
@@ -34,8 +34,8 @@ data:
     HTTP_ENABLE: "false"
     ES_JAVA_OPTS: "-Xms16g -Xmx16g"
   memory:
-    request: "32gGi"
-    limit: "32gGi"
+    request: "32Gi"
+    limit: "32Gi"
   cpu:
     request: "8"
     limit: "8"
@@ -51,8 +51,8 @@ master:
     ES_JAVA_OPTS: "-Xms4g -Xmx4g"
     NUMBER_OF_MASTERS: "2"
   memory:
-    request: "8gGi"
-    limit: "8gGi"
+    request: "8Gi"
+    limit: "8Gi"
   cpu:
     request: "1"
     limit: "1"
