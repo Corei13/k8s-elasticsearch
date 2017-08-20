@@ -26,7 +26,7 @@ client:
 
 data:
   replicas: 4
-  antiAffinity: "soft"
+  antiAffinity: "hard"
   env:
     NODE_DATA: "true"
     NODE_MASTER: "false"
@@ -37,12 +37,12 @@ data:
     request: "32Gi"
     limit: "32Gi"
   cpu:
-    request: "8"
-    limit: "8"
+    request: "4"
+    limit: "4"
 
 master:
   replicas: 3
-  antiAffinity: "soft"
+  antiAffinity: "hard"
   env:
     NODE_DATA: "false"
     NODE_MASTER: "true"
