@@ -85,6 +85,6 @@ spec:
         - mountPath: /data
           name: {{ template "fullname" . }}-storage
       volumes:
-        - name: {{ template "fullname" . }}-storage
-          persistentVolumeClaim:
-            claimName: {{ template "fullname" . }}-storage-claim
+          - emptyDir:
+              medium: ""
+            name: {{ template "fullname" . }}-storage

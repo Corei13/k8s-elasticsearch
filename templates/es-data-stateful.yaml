@@ -84,7 +84,12 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: {{ template "fullname" . }}-storage
-      volumes:
-        - name: {{ template "fullname" . }}-storage
-          persistentVolumeClaim:
-            claimName: {{ template "fullname" . }}-storage-claim
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ template "fullname" . }}-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ template "fullname" . }}-storage-class
+      resources:
+        requests:
+          storage: 300Gi
