@@ -1,11 +1,12 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
   name: {{ template "fullname" . }}-data
   labels:
     component: {{ template "fullname" . }}
     role: data
 spec:
+  serviceName: {{ template "fullname" . }}-data-svc
   replicas: {{ .Values.data.replicas }}
   template:
     metadata:
@@ -44,7 +45,7 @@ spec:
       containers:
       - name: es-data
         securityContext:
-          privileged: false
+          privileged: true
           capabilities:
             add:
               - IPC_LOCK
