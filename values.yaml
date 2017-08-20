@@ -5,7 +5,7 @@ common:
     pullPolicy: Always
   env:
     CLUSTER_NAME: "elasticsearch-test-1"
-    ES_PLUGINS_INSTALL: x-pack
+    # ES_PLUGINS_INSTALL: x-pack
     # Uncomment this if you get the "No up-and-running site-local (private) addresses" error
     # NETWORK_HOST: "_eth0_"
 
