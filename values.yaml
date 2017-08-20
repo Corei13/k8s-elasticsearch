@@ -58,6 +58,15 @@ master:
     request: "1"
     limit: "1"
 
+kibana:
+  replicas: 1
+  memory:
+    request: "1G"
+    limit: "1G"
+  cpu:
+    request: "0.5"
+    limit: "1"
+
 service:
   type: LoadBalancer
   httpPort: 9200
