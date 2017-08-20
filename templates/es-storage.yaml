@@ -11,8 +11,6 @@ spec:
     storage: 1000Gi
   accessModes:
     - ReadWriteOnce
-  hostPath:
-    path: "/data"
   gcePersistentDisk:
     pdName: elasticsearch-storage-test-1
     fsType: ext4
