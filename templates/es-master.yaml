@@ -13,6 +13,8 @@ spec:
         component: {{ template "fullname" . }}
         role: master
     spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: master
       initContainers:
       - name: init-sysctl
         image: busybox
