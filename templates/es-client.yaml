@@ -85,9 +85,9 @@ spec:
           name: transport
           protocol: TCP
         volumeMounts:
-        - name: storage
-          mountPath: /data
+        - mountPath: /data
+          name: {{ template "fullname" . }}-storage
       volumes:
-        - emptyDir:
-            medium: ""
-          name: "storage"
+        - name: {{ template "fullname" . }}-storage
+          persistentVolumeClaim:
+            claimName: {{ template "fullname" . }}-storage-claim
