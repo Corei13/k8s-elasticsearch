@@ -1,8 +1,8 @@
 apiVersion: v1
-description: A Helm chart for Kubernetes
+description: Elasticsearch and Kibana chart for k8s
 name: elasticsearch
 version: 0.0.2
 maintainers:
-  - name: Matt Titmus
-    email: matthew.titmus@gmail.com
+  - name: Dhananjoy Biswas
+    email: ebappa1971@gmail.com
 engine: gotpl

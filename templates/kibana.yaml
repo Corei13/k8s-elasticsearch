@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}-kibana
+  labels:
+    component: {{ template "fullname" . }}-kibana
+    role: kibana
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: {{ template "fullname" . }}-kibana
+        role: kibana
+    spec:
+      {{- if  .Values.kibana.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.kibana.nodeSelector }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: {{ template "fullname" . }}-kibana
+        image: "{{ .Values.common.image.kibana }}:{{ .Values.common.image.tag }}"
+        env:
+        - name: ELASTICSEARCH_URL
+          value: http://{{ template "fullname" . }}:9200
+        {{- range $key, $value :=  .Values.common.env }}
+        - name: {{ $key | upper | replace "-" "_" }}
+          value: {{ $value | quote }}
+        {{- end }}
+        resources:
+          requests:
+            memory: {{ .Values.kibana.memory.request }}
+            cpu: {{ .Values.kibana.cpu.request }}
+          limits:
+            memory: {{ .Values.kibana.memory.limit }}
+            cpu: {{ .Values.kibana.cpu.limit }}
+        ports:
+        - containerPort: 5601
+          name: kibana
+          protocol: TCP

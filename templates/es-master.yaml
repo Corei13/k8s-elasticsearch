@@ -55,7 +55,7 @@ spec:
             add:
               - IPC_LOCK
               - SYS_RESOURCE
-        image: "{{ .Values.common.image.repository }}:{{ .Values.common.image.tag }}"
+        image: "{{ .Values.common.image.elasticsearch }}:{{ .Values.common.image.tag }}"
         resources:
           requests:
             memory: {{ .Values.master.memory.request }}
