@@ -13,8 +13,12 @@ spec:
         component: {{ template "fullname" . }}
         role: master
     spec:
+      {{- if  .Values.master.nodeSelector }}
       nodeSelector:
-        cloud.google.com/gke-nodepool: master
+        {{- range $key, $value := .Values.master.nodeSelector }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
       initContainers:
       - name: init-sysctl
         image: busybox

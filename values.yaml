@@ -24,6 +24,8 @@ client:
   cpu:
     request: "2"
     limit: "2"
+  nodeSelector:
+    cloud.google.com/gke-nodepool: other
 
 data:
   replicas: 4
@@ -57,6 +59,8 @@ master:
   cpu:
     request: "1"
     limit: "1"
+  nodeSelector:
+    cloud.google.com/gke-nodepool: master
 
 kibana:
   replicas: 1
