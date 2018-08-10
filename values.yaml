@@ -1,16 +1,18 @@
 common:
   image:
-    elasticsearch: quay.io/pires/docker-elasticsearch-kubernetes
+    elasticsearch: docker.elastic.co/elasticsearch/elasticsearch
     kibana: docker.elastic.co/kibana/kibana
-    tag: 5.3.2
+    tag: 6.3.0
     pullPolicy: Always
   env:
-    CLUSTER_NAME: elasticsearch-test-1
+    CLUSTER_NAME: backpack-search
     XPACK_SECURITY_ENABLED: false
     XPACK_GRAPH_ENABLED: false
     XPACK_ML_ENABLED: false
-    XPACK_REPORTING_ENABLED: false
-    ES_PLUGINS_INSTALL: x-pack
+    ES_PLUGINS_INSTALL: repository-gcs
+    MEMORY_LOCK: false
+    MINIMUM_MASTER_NODES: 2
+    NETWORK_HOST: _site_
     # Uncomment this if you get the No up-and-running site-local (private) addresses error
     # NETWORK_HOST: _eth0_
 
@@ -21,16 +23,16 @@ client:
     NODE_DATA: false
     NODE_MASTER: false
     NODE_INGEST: true
-    HTTP_ENABLE: true
-    ES_JAVA_OPTS: -Xms8g -Xmx8g
+    HTTP_ENABLED: true
+    ES_JAVA_OPTS: -Xms4g -Xmx4g
   memory:
-    request: 16G
-    limit: 16G
+    request: 8G
+    limit: 8G
   cpu:
-    request: 2
-    limit: 2
+    request: 1
+    limit: 1
   nodeSelector:
-    cloud.google.com/gke-nodepool: other
+    cloud.google.com/gke-nodepool: es-other
 
 data:
   replicas: 4
@@ -39,14 +41,16 @@ data:
     NODE_DATA: true
     NODE_MASTER: false
     NODE_INGEST: false
-    HTTP_ENABLE: false
+    HTTP_ENABLED: false
     ES_JAVA_OPTS: -Xms16g -Xmx16g
   memory:
     request: 32G
     limit: 32G
   cpu:
-    request: 4
-    limit: 4
+    request: 7.5
+    limit: 8
+  nodeSelector:
+    cloud.google.com/gke-nodepool: es-data
 
 master:
   replicas: 3
@@ -55,9 +59,8 @@ master:
     NODE_DATA: false
     NODE_MASTER: true
     NODE_INGEST: false
-    HTTP_ENABLE: false
+    HTTP_ENABLED: false
     ES_JAVA_OPTS: -Xms4g -Xmx4g
-    NUMBER_OF_MASTERS: 2
   memory:
     request: 8G
     limit: 8G
@@ -65,18 +68,18 @@ master:
     request: 1
     limit: 1
   nodeSelector:
-    cloud.google.com/gke-nodepool: master
+    cloud.google.com/gke-nodepool: es-master
 
 kibana:
   replicas: 1
   memory:
-    request: 1G
-    limit: 1G
+    request: 4G
+    limit: 4G
   cpu:
-    request: 0.5
-    limit: 1
+    request: 2
+    limit: 2
   nodeSelector:
-    cloud.google.com/gke-nodepool: other
+    cloud.google.com/gke-nodepool: es-other
 
 service:
   type: LoadBalancer

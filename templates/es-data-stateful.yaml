@@ -7,6 +7,8 @@ metadata:
     role: data
 spec:
   serviceName: {{ template "fullname" . }}-data-svc
+  updateStrategy:
+    type: RollingUpdate
   replicas: {{ .Values.data.replicas }}
   template:
     metadata:
@@ -14,6 +16,8 @@ spec:
         component: {{ template "fullname" . }}
         role: data
     spec:
+      securityContext:
+        fsGroup: 1000
       {{- if  .Values.data.nodeSelector }}
       nodeSelector:
         {{- range $key, $value := .Values.data.nodeSelector }}
@@ -52,11 +56,30 @@ spec:
       - name: es-data
         securityContext:
           privileged: true
+          runAsUser: 1000
           capabilities:
             add:
               - IPC_LOCK
               - SYS_RESOURCE
         image: "{{ .Values.common.image.elasticsearch }}:{{ .Values.common.image.tag }}"
+        args:
+          - sh
+          - -c
+          - |
+            if [ ! -z "${ES_PLUGINS_INSTALL}" ]; then
+              OLDIFS=$IFS
+              IFS=','
+              for plugin in ${ES_PLUGINS_INSTALL}; do
+                if ! bin/elasticsearch-plugin list | grep -qs ${plugin}; then
+                  until bin/elasticsearch-plugin install --batch ${plugin}; do
+                    echo "failed to install ${plugin}, retrying in 3s"
+                    sleep 3
+                  done
+                fi
+              done
+              IFS=$OLDIFS
+            fi
+            bin/elasticsearch
         resources:
           requests:
             memory: {{ .Values.data.memory.request }}
@@ -77,11 +100,11 @@ spec:
         - name: DISCOVERY_SERVICE
           value: {{ template "fullname" . }}-discovery
         {{- range $key, $value :=  .Values.common.env }}
-        - name: {{ $key | upper | replace "-" "_" }}
+        - name: {{ $key }}
           value: {{ $value | quote }}
         {{- end }}
         {{- range $key, $value :=  .Values.data.env }}
-        - name: {{ $key | upper | replace "-" "_" }}
+        - name: {{ $key }}
           value: {{ $value | quote }}
         {{- end }}
         ports:
@@ -91,12 +114,33 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: {{ template "fullname" . }}-storage
+        - name: config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+        - name: config
+          mountPath: /usr/share/elasticsearch/config/jvm.options
+          subPath: jvm.options
+        - name: config
+          mountPath: /usr/share/elasticsearch/config/log4j2.properties
+          subPath: log4j2.properties
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "fullname" . }}-es-config
+            items:
+            - key: elasticsearch.yml
+              path: elasticsearch.yml
+            - key: jvm.options
+              path: jvm.options
+            - key: log4j2.properties
+              path: log4j2.properties
   volumeClaimTemplates:
   - metadata:
       name: {{ template "fullname" . }}-storage
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes:
+        - ReadWriteOnce
       storageClassName: {{ template "fullname" . }}-storage-class
       resources:
         requests:
-          storage: 300Gi
+          storage: {{ .Values.data.storage }}

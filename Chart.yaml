@@ -1,7 +1,7 @@
 apiVersion: v1
-description: Elasticsearch and Kibana chart for k8s
+description: Elasticsearch and Kibana chart for k8s using official docker images
 name: elasticsearch
-version: 0.0.2
+version: 0.1.0
 maintainers:
   - name: Dhananjoy Biswas
     email: ebappa1971@gmail.com
