@@ -1,3 +1,4 @@
 # for osx
 .DS_Store
 build/
+output/

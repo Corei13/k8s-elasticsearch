@@ -18,7 +18,31 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
-      storageClassName: {{ template "fullname" . }}-storage-class
+      storageClassName: {{ template "fullname" . }}-es-data-storage-class
       resources:
         requests:
           storage: {{ .Values.data.storage }}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ template "fullname" . }}-es-data-storage-class
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "fullname" . }}-data-svc
+  labels:
+    component: {{ template "fullname" . }}
+    role: data
+spec:
+  ports:
+  - port: 9300
+    name: transport
+  clusterIP: None
+  selector:
+    component: {{ template "fullname" . }}
+    role: data

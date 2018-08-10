@@ -1,0 +1,41 @@
+cluster:
+  name: ${CLUSTER_NAME}
+
+node:
+  master: ${NODE_MASTER}
+  name: ${NODE_NAME}
+  data: ${NODE_DATA}
+  ingest: ${NODE_INGEST}
+  # max_local_storage_nodes: ${MAX_LOCAL_STORAGE_NODES}
+
+processors: ${PROCESSORS:1}
+
+network.host: ${NETWORK_HOST}
+
+path:
+  # repo: ${REPO_LOCATIONS}
+  logs: /data/data
+  data: /data/logs
+
+bootstrap:
+  memory_lock: ${MEMORY_LOCK}
+
+http:
+  enabled: ${HTTP_ENABLED}
+  compression: true
+  # cors:
+  #   enabled: ${HTTP_CORS_ENABLED}
+  #   allow-origin: ${HTTP_CORS_ALLOW_ORIGIN}
+
+discovery:
+  zen:
+    minimum_master_nodes: ${MINIMUM_MASTER_NODES}
+    ping.unicast.hosts: ${DISCOVERY_SERVICE}
+
+xpack:
+  ml:
+    enabled: ${XPACK_ML_ENABLED}
+  security:
+    enabled: ${XPACK_SECURITY_ENABLED}
+  graph:
+    enabled: ${XPACK_GRAPH_ENABLED}

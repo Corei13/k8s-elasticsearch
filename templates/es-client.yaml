@@ -9,3 +9,25 @@ metadata:
 {{- $_ := set (.Values.client) "Global" . }}
 spec:
 {{ include "node.spec" .Values.client | indent 2 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    component: {{ template "fullname" . }}
+    role: client
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    component: {{ template "fullname" . }}
+    role: client
+  ports:
+  - name: http
+    port: {{ .Values.service.httpPort }}
+    targetPort: 9200
+    protocol: TCP
+  - name: transport
+    port: {{ .Values.service.transportPort }}
+    targetPort: 9300
+    protocol: TCP
