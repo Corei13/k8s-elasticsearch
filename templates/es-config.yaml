@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}-es-config
+data:
+  elasticsearch.yml: |
+    cluster:
+      name: ${CLUSTER_NAME}
+
+    node:
+      master: ${NODE_MASTER}
+      name: ${NODE_NAME}
+      data: ${NODE_DATA}
+      ingest: ${NODE_INGEST}
+      # max_local_storage_nodes: ${MAX_LOCAL_STORAGE_NODES}
+
+    processors: ${PROCESSORS:1}
+
+    network.host: ${NETWORK_HOST}
+
+    path:
+      # repo: ${REPO_LOCATIONS}
+      logs: /data/data
+      data: /data/logs
+
+    bootstrap:
+      memory_lock: ${MEMORY_LOCK}
+
+    http:
+      enabled: ${HTTP_ENABLED}
+      compression: true
+      # cors:
+      #   enabled: ${HTTP_CORS_ENABLED}
+      #   allow-origin: ${HTTP_CORS_ALLOW_ORIGIN}
+
+    discovery:
+      zen:
+        minimum_master_nodes: ${MINIMUM_MASTER_NODES}
+        ping.unicast.hosts: ${DISCOVERY_SERVICE}
+
+    xpack:
+      ml:
+        enabled: ${XPACK_ML_ENABLED}
+      security:
+        enabled: ${XPACK_SECURITY_ENABLED}
+      graph:
+        enabled: ${XPACK_GRAPH_ENABLED}
+
+  jvm.options: |
+    -XX:+UseConcMarkSweepGC
+    -XX:CMSInitiatingOccupancyFraction=75
+    -XX:+UseCMSInitiatingOccupancyOnly
+    -XX:+DisableExplicitGC
+    -XX:+AlwaysPreTouch
+    -server
+    -Xss1m
+    -Djava.awt.headless=true
+    -Dfile.encoding=UTF-8
+    -Djna.nosys=true
+    -Djdk.io.permissionsUseCanonicalPath=true
+    -Dio.netty.noUnsafe=true
+    -Dio.netty.noKeySetOptimization=true
+    -Dlog4j.shutdownHookEnabled=false
+    -Dlog4j2.disable.jmx=true
+    -Dlog4j.skipJansi=true
+    -XX:+HeapDumpOnOutOfMemoryError
+  log4j2.properties: |
+    status = error
+
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = [%d{ISO8601}][%-5p][%-25c{1.}] %marker%m%n
+
+    rootLogger.level = info
+    rootLogger.appenderRef.console.ref = console
