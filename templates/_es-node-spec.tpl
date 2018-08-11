@@ -8,7 +8,7 @@ template:
   spec:
     securityContext:
       fsGroup: 1000
-    {{- if  .nodeSelector }}
+    {{- if .nodeSelector }}
     nodeSelector:
       {{- range $key, $value := .nodeSelector }}
       {{ $key }}: {{ $value | quote }}
@@ -56,19 +56,28 @@ template:
         - sh
         - -c
         - |
-          if [ ! -z "${ES_PLUGINS_INSTALL}" ]; then
-            OLDIFS=$IFS
-            IFS=','
-            for plugin in ${ES_PLUGINS_INSTALL}; do
-              if ! bin/elasticsearch-plugin list | grep -qs ${plugin}; then
-                until bin/elasticsearch-plugin install --batch ${plugin}; do
-                  echo "failed to install ${plugin}, retrying in 3s"
-                  sleep 3
-                done
-              fi
+          # install plugins
+          {{- range $_, $plugin :=  .Global.Values.common.plugins }}
+          if ! bin/elasticsearch-plugin list | grep -qs {{ $plugin }}; then
+            until bin/elasticsearch-plugin install --batch {{ $plugin }}; do
+              echo "failed to install {{ $plugin }}, retrying in 3s"
+              sleep 3
             done
-            IFS=$OLDIFS
           fi
+          {{- end }}
+
+          # add keys to keystore
+          {{- if .Global.Values.common.keystore }}
+          bin/elasticsearch-keystore create
+          {{- range .Global.Values.common.keystore }}
+          {{- if .file }}
+          bin/elasticsearch-keystore add-file {{ .key }} /secrets-{{ .secret.name }}/{{ .secret.key }}
+          {{- else }}
+          cat /secrets-{{ .secret.name }}/{{ .secret.key }} | bin/elasticsearch-keystore add --stdin {{ .key }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+
           bin/elasticsearch
       resources:
         requests:
@@ -118,11 +127,21 @@ template:
       - name: config
         mountPath: /usr/share/elasticsearch/config/log4j2.properties
         subPath: log4j2.properties
+      {{- range .Global.Values.common.keystore }}
+      - name: {{ .secret.name }}
+        mountPath: /secrets-{{ .secret.name }}/{{ .secret.key }}
+        subPath: {{ .secret.key }}
+      {{- end }}
     volumes:
       {{- if ne .role "data" }}
       - name: {{ template "fullname" .Global }}-storage
         emptyDir:
           medium: ""
+      {{- end }}
+      {{- range  .Global.Values.common.keystore }}
+      - name: {{ .secret.name }}
+        secret:
+          secretName: {{ .secret.name }}
       {{- end }}
       - name: config
         configMap:

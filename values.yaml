@@ -4,15 +4,23 @@ common:
     kibana: docker.elastic.co/kibana/kibana
     tag: 6.3.0
     pullPolicy: Always
+  plugins:
+    - repository-gcs
+  keystore:
+    - key: gcs.client.default.credentials_file
+      secret:
+        name: gcs-service-account
+        key: gcs-service-account.json
+      file: true
   env:
     CLUSTER_NAME: backpack-search
     XPACK_SECURITY_ENABLED: false
     XPACK_GRAPH_ENABLED: false
     XPACK_ML_ENABLED: false
-    ES_PLUGINS_INSTALL: repository-gcs
     MEMORY_LOCK: false
     MINIMUM_MASTER_NODES: 2
     NETWORK_HOST: _site_
+    REINDEX_REMOTE_WHITELIST: ""
     # Uncomment this if you get the No up-and-running site-local (private) addresses error
     # NETWORK_HOST: _eth0_
 
@@ -49,6 +57,7 @@ data:
   cpu:
     request: 7.5
     limit: 8
+  storage: 512Gi
   nodeSelector:
     cloud.google.com/gke-nodepool: es-data
 
@@ -60,10 +69,10 @@ master:
     NODE_MASTER: true
     NODE_INGEST: false
     HTTP_ENABLED: false
-    ES_JAVA_OPTS: -Xms4g -Xmx4g
+    ES_JAVA_OPTS: -Xms3g -Xmx3g
   memory:
-    request: 8G
-    limit: 8G
+    request: 6G
+    limit: 6G
   cpu:
     request: 1
     limit: 1

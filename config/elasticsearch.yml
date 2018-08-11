@@ -39,3 +39,7 @@ xpack:
     enabled: ${XPACK_SECURITY_ENABLED}
   graph:
     enabled: ${XPACK_GRAPH_ENABLED}
+
+reindex:
+  remote:
+    whitelist: ${REINDEX_REMOTE_WHITELIST}
