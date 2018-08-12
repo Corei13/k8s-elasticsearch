@@ -2,7 +2,7 @@ common:
   image:
     elasticsearch: docker.elastic.co/elasticsearch/elasticsearch
     kibana: docker.elastic.co/kibana/kibana
-    tag: 6.3.0
+    tag: 6.3.2
     pullPolicy: Always
   plugins:
     - repository-gcs

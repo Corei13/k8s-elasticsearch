@@ -5,6 +5,8 @@ template:
     labels:
       component: {{ template "fullname" .Global }}
       role: {{ .role }}
+    annotations:
+      checksum/config: {{ include (print .Global.Template.BasePath "/es-config.yaml") .Global | sha256sum }}
   spec:
     securityContext:
       fsGroup: 1000
