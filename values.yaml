@@ -2,6 +2,7 @@ common:
   image:
     elasticsearch: docker.elastic.co/elasticsearch/elasticsearch
     kibana: docker.elastic.co/kibana/kibana
+    apmserver: docker.elastic.co/apm/apm-server
     tag: 6.3.2
     pullPolicy: Always
   plugins:
@@ -81,6 +82,19 @@ master:
 
 kibana:
   replicas: 1
+  memory:
+    request: 4G
+    limit: 4G
+  cpu:
+    request: 2
+    limit: 2
+  nodeSelector:
+    cloud.google.com/gke-nodepool: es-other
+
+apmserver:
+  replicas: 1
+  env:
+    BULK_MAX_SIZE: 1000
   memory:
     request: 4G
     limit: 4G

@@ -1,0 +1,79 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}-apmserver
+  labels:
+    component: {{ template "fullname" . }}-apmserver
+    role: apmserver
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: {{ template "fullname" . }}-apmserver
+        role: apmserver
+      annotations:
+        checksum/config: {{ include (print .Template.BasePath "/es-config.yaml") . | sha256sum }}
+    spec:
+      {{- if  .Values.apmserver.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.apmserver.nodeSelector }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: {{ template "fullname" . }}-apmserver
+        image: "{{ .Values.common.image.apmserver }}:{{ .Values.common.image.tag }}"
+        env:
+        - name: ELASTICSEARCH_URL
+          value: http://{{ template "fullname" . }}:9200
+        - name: KIBANA_URL
+          value: http://{{ template "fullname" . }}-kibana:5601
+        {{- range $key, $value :=  .Values.common.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- range $key, $value :=  .Values.apmserver.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        resources:
+          requests:
+            memory: {{ .Values.apmserver.memory.request }}
+            cpu: {{ .Values.apmserver.cpu.request }}
+          limits:
+            memory: {{ .Values.apmserver.memory.limit }}
+            cpu: {{ .Values.apmserver.cpu.limit }}
+        ports:
+        - containerPort: 8200
+          name: apmserver
+          protocol: TCP
+        volumeMounts:
+          - name: config
+            mountPath: /usr/share/apm-server/apm-server.yml
+            subPath: apm-server.yml
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "fullname" . }}-es-config
+            items:
+            - key: apm-server.yml
+              path: apm-server.yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "fullname" . }}-apmserver
+  labels:
+    component: {{ template "fullname" . }}-apmserver
+    role: apmserver
+spec:
+  type: LoadBalancer
+  selector:
+    component: {{ template "fullname" . }}-apmserver
+    role: apmserver
+  ports:
+  - name: apmserver
+    port: 8200
+    targetPort: 8200
+    protocol: TCP

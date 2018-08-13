@@ -4,7 +4,7 @@ metadata:
   name: {{ template "fullname" . }}-es-config
 data:
 {{- $files := .Files }}
-{{- range tuple "elasticsearch.yml" "jvm.options" "log4j2.properties" }}
+{{- range tuple "elasticsearch.yml" "jvm.options" "log4j2.properties" "apm-server.yml" }}
 {{ . | indent 2}}: |-
 {{ $files.Get (print "config/" .) | indent 4 }}
 {{- end }}
