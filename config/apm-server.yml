@@ -1,4 +1,6 @@
-apm-server.host: localhost:8200
+apm-server:
+  host: 0.0.0.0:8200
+  concurrent_requests: 100
 
 output:
   elasticsearch:
