@@ -1,0 +1,29 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: subscriber
+spec:
+  template:
+    metadata:
+      labels:
+        app: subscriber
+      annotations:
+        version: v1.0
+    spec:
+      volumes:
+      - name: gcs-sa
+        secret:
+          secretName: gcs-sa
+      containers:
+      - name: subscriber
+        image: dhananjoy/fn-k8s
+        volumeMounts:
+        - name: gcs-sa
+          mountPath: /var/secrets/google
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/gcs-sa.json
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace

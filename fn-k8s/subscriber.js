@@ -16,7 +16,7 @@ const logger = bunyan.createLogger({
 
 const k8sApi = k8s.Config.defaultClient();
 
-const NAMESPACE = 'development';
+const NAMESPACE = process.env.POD_NAMESPACE;
 
 const processJob = async (id, image, ttl, data) => {
   const { body } = await k8sApi.createNamespacedPod(NAMESPACE, {
