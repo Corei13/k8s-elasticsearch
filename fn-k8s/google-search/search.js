@@ -1,29 +1,31 @@
-const Controller = require('./lib/controller');
+const {Builder, By, Key, until} = require('selenium-webdriver');
+const chrome = require('selenium-webdriver/chrome');
 
-(async () => {
-  const controller = new Controller.default();
-  await controller.start();
-  const { QUERY: query = 'charity golf events' } = process.env;
-  const search = () => [].map.call(document.querySelectorAll('h3.r>a'), (e, i) => `[${i}] ${e.innerText} - ${e.href}`);
+async function example() {
+  let driver = await new Builder().forBrowser('chrome')
+    .setChromeOptions(
+      new chrome.Options().addArguments(['--headless','--no-sandbox','--disable-dev-shm-usage'])
+    ).build();
   try {
-    const { result, success, error } = await controller.runOnConsole(
-      'https://www.google.com/search?q=' + query.replace(/\s+/g, '+'),
-      search.toString(),
-      {},
-      Number(process.env.TTL || 10) * 1000
-    );
-    if (success) {
-      result.forEach(l => console.log(l));
-    } else {
-      throw new Error(error);
+    await driver.get('http://www.google.com/ncr');
+    (await driver.findElement(By.name('q'))).sendKeys('webdriver', Key.RETURN);
+    await driver.wait(until.titleIs('webdriver - Google Search'), 1000);
+    const results$$ = await driver.findElements(By.css('.srg > .g'));
+    for (let result$ of results$$) {
+      console.log({
+        title: await result$.findElement(By.css('h3')).getText(),
+        description: await result$.findElement(By.css('.st')).getText()
+      });
     }
-  } catch (e) {
-    await controller.kill();
-    throw e;
+  } finally {
+    await driver.quit();
   }
-  await controller.kill();
+};
+
+example().then(() => {
+  console.log('done!');
   process.exit(0);
-})().catch(err => {
+}).catch(err => {
   console.error(err);
   process.exit(1);
 });
