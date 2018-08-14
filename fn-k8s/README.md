@@ -63,7 +63,3 @@ gcloud pubsub topics publish $NAMESPACE-topic \
 kubectl logs -f -n $NAMESPACE $SUBSCRIBER_POD
 
 ```
-
-export PROJECT=backpack-782cb
-export NAMESPACE=demo
-export SA_NAME=demo-sa
