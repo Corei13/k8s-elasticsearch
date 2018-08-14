@@ -69,7 +69,7 @@ const check = async id => {
 
 (async () => {
   const pubsub = new PubSub();
-  const subscription = pubsub.subscription('test');
+  const subscription = pubsub.subscription(`${NAMESPACE}-subscription`);
 
   logger.info('Pulling messages from Pub/Sub subscription...');
 

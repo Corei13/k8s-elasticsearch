@@ -49,7 +49,21 @@ kubectl apply -f subscriber.yml -n $NAMESPACE
 SUBSCRIBER_POD=$(kubectl get po -n $NAMESPACE -l app=subscriber | tail -1 | cut -d' ' -f 1)
 kubectl logs -f -n $NAMESPACE $SUBSCRIBER_POD
 
+
+
+# create a cloud pubsub topic named  $NAMESPACE-topic and a subscription named $NAMESPACE-subscription
+gcloud pubsub topics create $NAMESPACE-topic
+gcloud pubsub subscriptions create $NAMESPACE-subscription --topic=$NAMESPACE-topic
+
+# now published message will be processed by the k8s pod $SUBSCRIBER_POD
+gcloud pubsub topics publish $NAMESPACE-topic \
+  --message='{"image":{"name":"dhananjoy/google-search","data":{"query":"cloud pubsub"}},"ttl":30}'
+
+# see subscriber log for update
+kubectl logs -f -n $NAMESPACE $SUBSCRIBER_POD
+
+```
+
 export PROJECT=backpack-782cb
 export NAMESPACE=demo
 export SA_NAME=demo-sa
-```
