@@ -1,10 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "fullname" . }}-es-config
+  name: apmserver-config
+  namespace: {{ .Values.common.namespace.apmserver }}
 data:
 {{- $files := .Files }}
-{{- range tuple "elasticsearch.yml" "jvm.options" "log4j2.properties" "apm-server.yml" }}
+{{- range tuple "apm-server.yml" }}
 {{ . | indent 2}}: |-
 {{ $files.Get (print "config/" .) | indent 4 }}
 {{- end }}

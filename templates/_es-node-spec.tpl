@@ -3,10 +3,10 @@ replicas: {{ .replicas }}
 template:
   metadata:
     labels:
-      component: {{ template "fullname" .Global }}
+      component: elasticsearch
       role: {{ .role }}
     annotations:
-      checksum/config: {{ include (print .Global.Template.BasePath "/es-config.yaml") .Global | sha256sum }}
+      checksum/config: {{ include (print .Global.Template.BasePath "/config/elasticsearch.yaml") .Global | sha256sum }}
   spec:
     securityContext:
       fsGroup: 1000
@@ -30,7 +30,7 @@ template:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                component: {{ template "fullname" .Global }}
+                component: elasticsearch
                 role: {{ .role }}
     {{- else if eq .antiAffinity "soft" }}
     affinity:
@@ -41,7 +41,7 @@ template:
             topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                component: {{ template "fullname" .Global }}
+                component: elasticsearch
                 role: {{ .role }}
     {{- end }}
     containers:
@@ -99,7 +99,7 @@ template:
           fieldRef:
             fieldPath: metadata.name
       - name: DISCOVERY_SERVICE
-        value: {{ template "fullname" .Global }}-discovery
+        value: elasticsearch-discovery
       {{- range $key, $value :=  .Global.Values.common.env }}
       - name: {{ $key }}
         value: {{ $value | quote }}
@@ -118,8 +118,8 @@ template:
         name: transport
         protocol: TCP
       volumeMounts:
-      - mountPath: /data
-        name: {{ template "fullname" .Global }}-storage
+      - name: data
+        mountPath: /data
       - name: config
         mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
         subPath: elasticsearch.yml
@@ -136,9 +136,8 @@ template:
       {{- end }}
     volumes:
       {{- if ne .role "data" }}
-      - name: {{ template "fullname" .Global }}-storage
-        emptyDir:
-          medium: ""
+      - name: data
+        emptyDir: {}
       {{- end }}
       {{- range  .Global.Values.common.keystore }}
       - name: {{ .secret.name }}
@@ -147,7 +146,7 @@ template:
       {{- end }}
       - name: config
         configMap:
-          name: {{ template "fullname" .Global }}-es-config
+          name: elasticsearch-config
           items:
           - key: elasticsearch.yml
             path: elasticsearch.yml

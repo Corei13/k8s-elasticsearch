@@ -1,12 +1,13 @@
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: {{ template "fullname" . }}-data
+  name: elasticsearch-data
+  namespace: {{ .Values.common.namespace.elasticsearch }}
   labels:
-    component: {{ template "fullname" . }}
+    component: elasticsearch
     role: data
 spec:
-  serviceName: {{ template "fullname" . }}-data-svc
+  serviceName: elasticsearch-data-svc
   updateStrategy:
     type: RollingUpdate
   {{- $_ := set (.Values.data) "role" "data" }}
@@ -14,11 +15,11 @@ spec:
 {{ include "node.spec" .Values.data | indent 2 }}
   volumeClaimTemplates:
   - metadata:
-      name: {{ template "fullname" . }}-storage
+      name: data
     spec:
       accessModes:
         - ReadWriteOnce
-      storageClassName: {{ template "fullname" . }}-es-data-storage-class
+      storageClassName: elasticsearch-data-storage-class
       resources:
         requests:
           storage: {{ .Values.data.storage }}
@@ -26,7 +27,8 @@ spec:
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: {{ template "fullname" . }}-es-data-storage-class
+  name: elasticsearch-data-storage-class
+  namespace: {{ .Values.common.namespace.elasticsearch }}
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-ssd
@@ -34,9 +36,10 @@ parameters:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "fullname" . }}-data-svc
+  name: elasticsearch-data-svc
+  namespace: {{ .Values.common.namespace.elasticsearch }}
   labels:
-    component: {{ template "fullname" . }}
+    component: elasticsearch
     role: data
 spec:
   ports:
@@ -44,5 +47,5 @@ spec:
     name: transport
   clusterIP: None
   selector:
-    component: {{ template "fullname" . }}
+    component: elasticsearch
     role: data

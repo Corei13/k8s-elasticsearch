@@ -1,19 +1,20 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ template "fullname" . }}-apmserver
+  name: apmserver
+  namespace: {{ .Values.common.namespace.apmserver }}
   labels:
-    component: {{ template "fullname" . }}-apmserver
+    component: elasticsearch
     role: apmserver
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        component: {{ template "fullname" . }}-apmserver
+        component: elasticsearch
         role: apmserver
       annotations:
-        checksum/config: {{ include (print .Template.BasePath "/es-config.yaml") . | sha256sum }}
+        checksum/config: {{ include (print .Template.BasePath "/config/apm-server.yaml") . | sha256sum }}
     spec:
       {{- if  .Values.apmserver.nodeSelector }}
       nodeSelector:
@@ -22,13 +23,13 @@ spec:
         {{- end }}
       {{- end }}
       containers:
-      - name: {{ template "fullname" . }}-apmserver
+      - name: {{ template "name" . }}-apmserver
         image: "{{ .Values.common.image.apmserver }}:{{ .Values.common.image.tag }}"
         env:
         - name: ELASTICSEARCH_URL
-          value: http://{{ template "fullname" . }}:9200
+          value: http://{{ template "name" . }}:9200
         - name: KIBANA_URL
-          value: http://{{ template "fullname" . }}-kibana:80
+          value: http://{{ template "name" . }}-kibana:80
         {{- range $key, $value :=  .Values.common.env }}
         - name: {{ $key }}
           value: {{ $value | quote }}
@@ -55,7 +56,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: {{ template "fullname" . }}-es-config
+            name: {{ template "name" . }}-es-config
             items:
             - key: apm-server.yml
               path: apm-server.yml
@@ -63,17 +64,28 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "fullname" . }}-apmserver
+  name: {{ template "name" . }}-apmserver
   labels:
-    component: {{ template "fullname" . }}-apmserver
+    component: {{ template "name" . }}-apmserver
     role: apmserver
 spec:
   type: LoadBalancer
   selector:
-    component: {{ template "fullname" . }}-apmserver
+    component: {{ template "name" . }}-apmserver
     role: apmserver
   ports:
   - name: apmserver
     port: 8200
     targetPort: 8200
     protocol: TCP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "name" . }}-es-config
+data:
+{{- $files := .Files }}
+{{- range tuple "apmserver.yml" }}
+{{ . | indent 2}}: |-
+{{ $files.Get (print "config/" .) | indent 4 }}
+{{- end }}

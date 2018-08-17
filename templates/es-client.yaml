@@ -1,9 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ template "fullname" . }}-client
+  name: elasticsearch-client
+  namespace: {{ .Values.common.namespace.elasticsearch }}
   labels:
-    component: {{ template "fullname" . }}
+    component: elasticsearch
     role: client
 {{- $_ := set (.Values.client) "role" "client" }}
 {{- $_ := set (.Values.client) "Global" . }}
@@ -13,14 +14,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "fullname" . }}
+  name: elasticsearch
+  namespace: {{ .Values.common.namespace.elasticsearch }}
   labels:
-    component: {{ template "fullname" . }}
+    component: elasticsearch
     role: client
 spec:
   type: {{ .Values.service.type }}
   selector:
-    component: {{ template "fullname" . }}
+    component: elasticsearch
     role: client
   ports:
   - name: http

@@ -1,9 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ template "fullname" . }}-master
+  name: elasticsearch-master
+  namespace: {{ .Values.common.namespace.elasticsearch }}
   labels:
-    component: {{ template "fullname" . }}
+    component: elasticsearch
     role: master
 {{- $_ := set (.Values.master) "role" "master" }}
 {{- $_ := set (.Values.master) "Global" . }}

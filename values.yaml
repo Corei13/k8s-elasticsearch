@@ -3,6 +3,7 @@ common:
     elasticsearch: docker.elastic.co/elasticsearch/elasticsearch
     kibana: docker.elastic.co/kibana/kibana
     apmserver: docker.elastic.co/apm/apm-server
+    metricbeat: docker.elastic.co/beats/metricbeat
     tag: 6.3.2
     pullPolicy: Always
   plugins:
@@ -13,6 +14,11 @@ common:
         name: gcs-service-account
         key: gcs-service-account.json
       file: true
+  namespace:
+    elasticsearch: elasticsearch
+    kibana: elasticsearch
+    apmserver: monitoring
+    metricbeat: monitoring
   env:
     CLUSTER_NAME: backpack-search
     XPACK_SECURITY_ENABLED: false
@@ -41,7 +47,7 @@ client:
     request: 1
     limit: 1
   nodeSelector:
-    cloud.google.com/gke-nodepool: es-other
+    cloud.google.com/gke-nodepool: default-pool
 
 data:
   replicas: 4
@@ -89,7 +95,7 @@ kibana:
     request: 2
     limit: 2
   nodeSelector:
-    cloud.google.com/gke-nodepool: es-other
+    cloud.google.com/gke-nodepool: default-pool
 
 apmserver:
   replicas: 1
@@ -102,7 +108,21 @@ apmserver:
     request: 2
     limit: 2
   nodeSelector:
-    cloud.google.com/gke-nodepool: es-other
+    cloud.google.com/gke-nodepool: default-pool
+
+# when using gke, you'll have to run the following command to grant your user cluster admin roles
+# kubectl create clusterrolebinding <your-cluster-admin-binding> \
+#  --clusterrole=cluster-admin --user=<your-gcloud-account-email>
+metricbeat:
+  memory:
+    request: 100Mi
+    limit: 100Mi
+  cpu:
+    request: 100m
+    limit: 100m
+  updateStrategy: RollingUpdate
+  nodeSelector:
+    cloud.google.com/gke-nodepool: default-pool
 
 service:
   type: LoadBalancer

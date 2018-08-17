@@ -1,16 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ template "fullname" . }}-kibana
+  name: kibana
+  namespace: {{ .Values.common.namespace.kibana }}
   labels:
-    component: {{ template "fullname" . }}-kibana
+    component: elasticsearch
     role: kibana
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        component: {{ template "fullname" . }}-kibana
+        component: elasticsearch
         role: kibana
     spec:
       {{- if  .Values.kibana.nodeSelector }}
@@ -20,11 +21,11 @@ spec:
         {{- end }}
       {{- end }}
       containers:
-      - name: {{ template "fullname" . }}-kibana
+      - name: kibana
         image: "{{ .Values.common.image.kibana }}:{{ .Values.common.image.tag }}"
         env:
         - name: ELASTICSEARCH_URL
-          value: http://{{ template "fullname" . }}:9200
+          value: http://elasticsearch.{{ .Values.common.namespace.elasticsearch }}:9200
         {{- range $key, $value :=  .Values.common.env }}
         - name: {{ $key }}
           value: {{ $value | quote }}
@@ -48,14 +49,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "fullname" . }}-kibana
+  name: kibana
+  namespace: {{ .Values.common.namespace.kibana }}
   labels:
-    component: {{ template "fullname" . }}-kibana
+    component: elasticsearch
     role: kibana
 spec:
   type: LoadBalancer
   selector:
-    component: {{ template "fullname" . }}-kibana
+    component: elasticsearch
     role: kibana
   ports:
   - name: http
