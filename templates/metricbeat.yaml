@@ -179,7 +179,16 @@ items:
           # Uncomment this to get k8s events:
           #- event
         period: 10s
-        hosts: ["kube-state-metrics:8080"]
+        hosts: ["kube-state-metrics.kube-system:8080"]
+    # TODO: make these configurable 
+    redis.yml: |-
+      - module: redis
+        metricsets: ["info", "keyspace"]
+        enabled: true
+        period: 10s
+
+        # Redis hosts
+        hosts: ["crawler-master-redis.crawler:6379"]
   # Deploy singleton instance in the whole cluster for some unique data sources, like kube-state-metrics
 - kind: Deployment
   apiVersion: apps/v1beta1
@@ -195,6 +204,8 @@ items:
         labels:
           component: elasticsearch
           role: metricbeat
+        annotations:
+          version: v4
       spec:
         serviceAccountName: metricbeat
         containers:
